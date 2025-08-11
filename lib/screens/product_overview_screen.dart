@@ -10,7 +10,7 @@ import '../widgets/app_drawer.dart';
 enum filterOptions { Favorite, All }
 
 class ProductOverviewScreen extends StatefulWidget {
-  ProductOverviewScreen({super.key});
+  const ProductOverviewScreen({super.key});
 
   @override
   State<ProductOverviewScreen> createState() => _ProductOverviewScreenState();
@@ -38,10 +38,10 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
             icon: Icon(Icons.more_vert),
             itemBuilder: (_) => [
               PopupMenuItem(
-                child: Text('Only Favorites'),
                 value: filterOptions.Favorite,
+                child: Text('Only Favorites'),
               ),
-              PopupMenuItem(child: Text('Show All'), value: filterOptions.All),
+              PopupMenuItem(value: filterOptions.All, child: Text('Show All')),
             ],
           ),
           Consumer<Cart>(

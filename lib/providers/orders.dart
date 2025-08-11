@@ -17,7 +17,7 @@ class OrdersItem {
 }
 
 class Orders with ChangeNotifier {
-  List<OrdersItem> _orders = [];
+  final List<OrdersItem> _orders = [];
 
   List<OrdersItem> get orders {
     return [..._orders];
