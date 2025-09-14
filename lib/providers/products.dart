@@ -1,9 +1,12 @@
 import 'package:flutter/widgets.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import './product.dart';
+import '../models/http_exception.dart';
 
 class Products with ChangeNotifier {
-  final List<Product> _items = [
-    Product(
+  List<Product> _items = [
+    /* Product(
       id: 'p1',
       title: 'Red Shirt',
       description: 'A red shirt - it is pretty red!',
@@ -34,7 +37,7 @@ class Products with ChangeNotifier {
       price: 49.99,
       imageUrl:
           'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Cast-Iron-Pan.jpg/1024px-Cast-Iron-Pan.jpg',
-    ),
+    ),*/
   ];
 
   List<Product> get items {
@@ -49,25 +52,105 @@ class Products with ChangeNotifier {
     return _items.firstWhere((prod) => prod.id == id);
   }
 
-  void addProduct(Product product) {
-    final newProduct = Product(
-      description: product.description,
-      id: DateTime.now().toString(),
-      imageUrl: product.imageUrl,
-      price: product.price,
-      title: product.title,
+  Future<void> fetchAndSetProducts() async {
+    final url = Uri.parse(
+      'https://shop-app-30e51-default-rtdb.firebaseio.com/products.json',
     );
-    _items.add(newProduct);
-    notifyListeners();
+    try {
+      final response = await http.get(url);
+      final extractedData = json.decode(response.body) as Map<String, dynamic>;
+      final List<Product> loadedProducts = [];
+      extractedData.forEach((prodId, prodData) {
+        loadedProducts.add(
+          Product(
+            id: prodId,
+            title: prodData['title'],
+            description: prodData['description'],
+            imageUrl: prodData['imageUrl'],
+            price: prodData['price'],
+            isFavorite: prodData['isFavorite'] ?? false,
+          ),
+        );
+      });
+      _items = loadedProducts;
+      notifyListeners();
+    } catch (error) {
+      throw error;
+    }
   }
 
-  void updateProduct(String id, Product newProduct) {
+  Future<void> addProduct(Product product) async {
+    final url = Uri.parse(
+      'https://shop-app-30e51-default-rtdb.firebaseio.com/products.json',
+    );
+    try {
+      final response = await http.post(
+        url,
+        body: json.encode({
+          'title': product.title,
+          'description': product.description,
+          'imageUrl': product.imageUrl,
+          'price': product.price,
+          'isFavorite': product.isFavorite,
+        }),
+      );
+
+      final newProduct = Product(
+        description: product.description,
+        id: json.decode(response.body)['name'],
+        imageUrl: product.imageUrl,
+        price: product.price,
+        title: product.title,
+      );
+      _items.add(newProduct);
+      notifyListeners();
+    } catch (error) {
+      print(error);
+      throw error;
+    }
+  }
+
+  Future<void> updateProduct(String id, Product newProduct) async {
     final prodIndex = _items.indexWhere((prod) => prod.id == id);
+    final url = Uri.parse(
+      'https://shop-app-30e51-default-rtdb.firebaseio.com/products/$id.json',
+    );
+    await http.patch(
+      url,
+      body: json.encode({
+        'title': newProduct.title,
+        'description': newProduct.description,
+        'imageUrl': newProduct.imageUrl,
+        'price': newProduct.price,
+      }),
+    );
     if (prodIndex >= 0) {
       _items[prodIndex] = newProduct;
       notifyListeners();
     } else {
       print('...');
     }
+  }
+
+  void deleteProduct(String id) {
+    final url = Uri.parse(
+      'https://shop-app-30e51-default-rtdb.firebaseio.com/products/$id.json',
+    );
+    final existingProductIndex = _items.indexWhere((prod) => prod.id == id);
+    Product? existingProduct = _items[existingProductIndex];
+    _items.removeAt(existingProductIndex);
+    notifyListeners();
+    http
+        .delete(url)
+        .then((response) {
+          if (response.statusCode >= 400) {
+            throw HttpException('Could not delete product.');
+          }
+          existingProduct = null;
+        })
+        .catchError((error) {
+          _items.insert(existingProductIndex, existingProduct!);
+          notifyListeners();
+        });
   }
 }

@@ -6,6 +6,7 @@ import '../widgets/badge_label.dart';
 import '../providers/cart.dart';
 import './cart_screen.dart';
 import '../widgets/app_drawer.dart';
+import '../providers/products.dart';
 
 enum filterOptions { Favorite, All }
 
@@ -18,6 +19,43 @@ class ProductOverviewScreen extends StatefulWidget {
 
 class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
   var _showOnlyFavorites = false;
+  var _isInit = true;
+  var _isLoading = false;
+
+  void didChangeDependencies() {
+    if (_isInit) {
+      setState(() {
+        _isLoading = true;
+      });
+      Provider.of<Products>(context)
+          .fetchAndSetProducts()
+          .then((_) {
+            setState(() {
+              _isLoading = false;
+            });
+          })
+          .catchError((error) {
+            // Handle error if needed
+            showDialog<Null>(
+              context: context,
+              builder: (ctx) => AlertDialog(
+                title: Text('An error occured!'),
+                content: Text('Something went wrong. Please try again later.'),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(ctx).pop();
+                    },
+                    child: Text('Okay'),
+                  ),
+                ],
+              ),
+            );
+          });
+      _isInit = false;
+    }
+    super.didChangeDependencies();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +95,9 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
         ],
       ),
       drawer: AppDrawer(),
-      body: ProductGrid(showFavs: _showOnlyFavorites),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : ProductGrid(showFavs: _showOnlyFavorites),
     );
   }
 }

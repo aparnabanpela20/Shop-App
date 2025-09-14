@@ -24,15 +24,16 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (ctx) => Products()),
         ChangeNotifierProvider(create: (ctx) => Cart()),
         ChangeNotifierProvider(create: (ctx) => Orders()),
-      ],
+      ], //defined providers
       child: MaterialApp(
+        debugShowCheckedModeBanner: false,
         title: 'Flutter Demo',
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(
             seedColor: Colors.purple,
             secondary: Colors.orange,
           ),
-          useMaterial3: true,
+          useMaterial3: true, // Use Material 3 design
         ),
         home: ProductOverviewScreen(),
         routes: {
