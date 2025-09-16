@@ -22,6 +22,7 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
   var _isInit = true;
   var _isLoading = false;
 
+  @override
   void didChangeDependencies() {
     if (_isInit) {
       setState(() {

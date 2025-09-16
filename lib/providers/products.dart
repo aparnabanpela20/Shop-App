@@ -58,6 +58,7 @@ class Products with ChangeNotifier {
     );
     try {
       final response = await http.get(url);
+      print(json.decode(response.body));
       final extractedData = json.decode(response.body) as Map<String, dynamic>;
       final List<Product> loadedProducts = [];
       extractedData.forEach((prodId, prodData) {
@@ -75,7 +76,7 @@ class Products with ChangeNotifier {
       _items = loadedProducts;
       notifyListeners();
     } catch (error) {
-      throw error;
+      rethrow;
     }
   }
 
@@ -106,7 +107,7 @@ class Products with ChangeNotifier {
       notifyListeners();
     } catch (error) {
       print(error);
-      throw error;
+      rethrow;
     }
   }
 
@@ -132,7 +133,7 @@ class Products with ChangeNotifier {
     }
   }
 
-  void deleteProduct(String id) {
+  Future<void> deleteProduct(String id) async {
     final url = Uri.parse(
       'https://shop-app-30e51-default-rtdb.firebaseio.com/products/$id.json',
     );
@@ -140,17 +141,12 @@ class Products with ChangeNotifier {
     Product? existingProduct = _items[existingProductIndex];
     _items.removeAt(existingProductIndex);
     notifyListeners();
-    http
-        .delete(url)
-        .then((response) {
-          if (response.statusCode >= 400) {
-            throw HttpException('Could not delete product.');
-          }
-          existingProduct = null;
-        })
-        .catchError((error) {
-          _items.insert(existingProductIndex, existingProduct!);
-          notifyListeners();
-        });
+    final response = await http.delete(url);
+    if (response.statusCode >= 400) {
+      _items.insert(existingProductIndex, existingProduct!);
+      notifyListeners();
+      throw HttpException('Could not delete product.');
+    }
+    existingProduct = null;
   }
 }
