@@ -10,6 +10,7 @@ import './providers/orders.dart';
 import './screens/order_screen.dart';
 import './screens/user_product_screen.dart';
 import './screens/edit_product_screen.dart';
+import './screens/auth_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -35,7 +36,7 @@ class MyApp extends StatelessWidget {
           ),
           useMaterial3: true, // Use Material 3 design
         ),
-        home: ProductOverviewScreen(),
+        home: AuthScreen(),
         routes: {
           ProductDetailScreen.routeName: (ctx) => ProductDetailScreen(),
           CartScreen.routeName: (ctx) => CartScreen(),
