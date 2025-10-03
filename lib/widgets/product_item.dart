@@ -22,7 +22,10 @@ class ProductItem extends StatelessWidget {
             builder: (ctx, product, child) => IconButton(
               onPressed: () async {
                 try {
-                  await product.toggleFavoriteStatus(authData.token);
+                  await product.toggleFavoriteStatus(
+                    authData.token,
+                    authData.userId,
+                  );
                 } catch (error) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
