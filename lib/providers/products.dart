@@ -68,10 +68,6 @@ class Products with ChangeNotifier {
       print(json.decode(response.body));
       final extractedData = json.decode(response.body) as Map<String, dynamic>;
 
-      if (extractedData == null) {
-        return;
-      }
-
       url = Uri.parse(
         'https://shop-app-30e51-default-rtdb.firebaseio.com/userFavorites/$userId.json?auth=$authToken',
       );
